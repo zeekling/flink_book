@@ -74,6 +74,12 @@ Task执行用户代码所使用的内存。
 
 如果size没指定，则等于Flink内存 * fraction 。
 
+查看TaskManager内存图，如下所示，如果内存长时间占用比例过高就需要调整Flink作业内存了。
+
+![pic](./taskmanager002.png)
+
+- 如果未使用RocksDB作为状态后端，则可以将管理内存调整为0.
+- 单个TaskManager内存大小为2-8G之间。
 
 
 # 合理CPU设置
