@@ -185,9 +185,46 @@ RocksDB中，每个State使用一个Column Family，每个Column Family使用独
 
 `state.backend,rocksdb.thread.num: 4`
 
+### 增大write buffer最小合并数
+
+将数据从write buffer中flush到磁盘时，需要合并的write buffer最小数量。默认为1，可以调整为3.
+
+`state.backend.rocksdb.writebuffer.number-to-merge: 3`
 
 
 ## 开启分区索引功能
 
+Flink 1.13 中对 RocksDB 增加了分区索引功能 ，复用了 RocksDB 的 partitioned Index & filter 功能，简单来说就是对 RocksDB 
+的 partitioned Index 做了多级索引。
 
+也就是将内存中的最上层常驻，下层根据需要再 load 回来，这样就大大降低了数据 Swap 竞争。线上测试中，相对于内存比较小的场
+景中，性能提升 10 倍左右。如果在内存管控下 RocksDB 性能不如预期的话，这也能成为一个性能优化点。
+
+`state.backend.rocksdb.memory.partitioned-index-filters:true `
+
+# Checkpoint 设置
+
+一般需求，我们的 Checkpoint 时间间隔可以设置为分钟级别 （1 ~5 分钟）。对于状态很大的任务，每次 Checkpoint 访问 HDFS 比
+较耗时，可以设置为 5~10 分钟一次 Checkpoint，并且调大两次 Checkpoint 之间的暂停间隔，例如设置两次 Checkpoint 之间至少暂
+停 4 或 8 分钟。同时，也需要考虑时效性的要求,需要在时效性和性能之间做一个平衡，如果时效性要求高，结合 end- to-end 时长
+， 设置秒级或毫秒级。如果 Checkpoint 语义配置为EXACTLY_ONCE，那么在 Checkpoint 过程中还会存在 barrier 对齐的过程，可以
+通过 Flink Web UI 的 Checkpoint 选项卡来查看 Checkpoint 过程中各阶段的耗时情况，从而确定到底是哪个阶段导致 Checkpoint 
+时间过长然后针对性的解决问题。
+
+RocksDB 相关参数在前面已说明，可以在 flink-conf.yaml 指定，也可以在 Job 的代码中调用 API 单独指定，这里不再列出。
+
+```java 
+// 使⽤  RocksDBStateBackend 做为状态后端，  并开启增量 Checkpoint
+RocksDBStateBackend rocksDBStateBackend = new RocksDBStateBackend("hdfs://hadoop1:8020/flink/checkpoints", true);
+env.setStateBackend(rocksDBStateBackend);
+// 开启 Checkpoint ， 间隔为 3 分钟
+env.enableCheckpointing(TimeUnit.MINUTES.toMillis(3));
+// 配置 Checkpoint
+CheckpointConfig checkpointConf = env.getCheckpointConfig();
+checkpointConf.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE); // 最小间隔 4 分钟
+checkpointConf.setMinPauseBetweenCheckpoints(TimeUnit.MINUTES.toMillis(4)); // 超时时间  10 分钟
+checkpointConf.setCheckpointTimeout(TimeUnit.MINUTES.toMillis(10));
+// 保存 checkpoint
+checkpointConf.enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+```
 
