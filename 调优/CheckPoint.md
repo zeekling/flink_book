@@ -204,7 +204,7 @@ Flink 1.13 中对 RocksDB 增加了分区索引功能 ，复用了 RocksDB 的 p
 
 # Checkpoint 设置
 
-一般需求，我们的 Checkpoint 时间间隔可以设置为分钟级别 （1 ~5 分钟）。对于状态很大的任务，每次 Checkpoint 访问 HDFS 比
+一般需求，我们的 Checkpoint 时间间隔可以设置为分钟级别 （1 ~ 5 分钟）。对于状态很大的任务，每次 Checkpoint 访问 HDFS 比
 较耗时，可以设置为 5~10 分钟一次 Checkpoint，并且调大两次 Checkpoint 之间的暂停间隔，例如设置两次 Checkpoint 之间至少暂
 停 4 或 8 分钟。同时，也需要考虑时效性的要求,需要在时效性和性能之间做一个平衡，如果时效性要求高，结合 end- to-end 时长
 ， 设置秒级或毫秒级。如果 Checkpoint 语义配置为EXACTLY_ONCE，那么在 Checkpoint 过程中还会存在 barrier 对齐的过程，可以
