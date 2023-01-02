@@ -1,3 +1,6 @@
+
+<a title="Hits" target="_blank" href="https://github.com/zeekling/hits"><img src="https://hits.b3log.org/zeekling/flink_book.svg"></a>
+
 # 内存设置
 
 ## TaskManager 内存模型
@@ -128,5 +131,4 @@ text.keyBy(XXX)
 
 在实际的使用中,我们需要设置合理的并行度来保证数据的高效处理，在一般情况下例如source，Sink等
 可能会需要不同的并行度来保证数据的快速读取与写入负载等。
-
 
