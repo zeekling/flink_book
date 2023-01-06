@@ -68,3 +68,115 @@ checkpoint**超时失败**。而state大小同样可能拖慢checkpoint甚至OOM
 使用超过容器资源（使用RocksDBStateBackend）的稳定性。
 
 
+# 反压定位
+
+## Flink Web UI 自带的反压监控
+
+Flink Web UI 的反压监控提供了 Subtask 级别的反压监控。监控的原理是通过Thread.getStackTrace() 采集在 
+TaskManager 上正在运行的所有线程，收集在缓冲区请求中阻塞的线程数（意味着下游阻塞），并计算缓冲区阻塞线程数与
+总线程数的比值 rate。其中，rate < 0.1 为 OK，0.1 <= rate <= 0.5 为 LOW，rate > 0.5 为 HIGH。
+
+![pic](./backpress003.png)
+
+
+以下两种场景可能导致反压：
+
+- 该节点发送速率跟不上它的产生数据速率。该场景一般是单输入多输出的算子，例如FlatMap。定位手段是因为这是从 
+ Source Task 到 Sink Task 的第一个出现反压的节点，所以该节点是反压的根源节点。
+- 下游的节点处理数据的速率较慢，通过反压限制了该节点的发送速率。定位手段是从该节点开始继续排查下游节点。
+
+注意事项：
+
+- 因为Flink Web UI 反压面板是监控发送端的，所以反压的根源节点并不一定会在反压面板体现出高反压。如果某个节点是
+性能瓶颈并不会导致它本身出现高反压，而是导致它的上游出现高反压。总体来看，如果找到第一个出现反压的节点，则反
+压根源是这个节点或者是它的下游节点。
+- 通过反压面板无法区分上述两种状态，需要结合 Metrics 等监控手段来定位。如果作业的节点数很多或者并行度很大，即
+需要采集所有 Task 的栈信息，反压面板的压力也会很大甚至不可用 。
+
+
+## Flink Task Metrics 监控反压
+
+Network和 task I/Ometrics 是轻量级反压监视器，用于正在持续运行的作业，其中一下几个 metrics 是最有用的反压指标。
+
+| Metrics | 描述 |
+|----|----|
+| outPoolUsage | 发送端Buffer的使用率 |
+| inPoolUsage | 接受端Buffer的使用率 |
+| floatinguffersUsage(1.9以上) | 接受端floating Buffer的使用率  |
+| exclusiveBuffersUsage(1.9以上) | 接受端exclusive Buffer的使用率 |
+
+
+采用 Metrics 分析反压的思路：如果一个 Subtask 的发送端 Buffer 占用率很高，则表明它被下游反压限速了；如果一个
+Subtask 的接受端 Buffer 占用很高，则表明它将反压传导至上游。
+
+| / | outPoolUsage 低 | outPoolUsage 高 |
+|--- |--- |---| 
+| inPoolUsage 低 | 正常 | 被下游反压，处于临时情况，没传递到上游；<br>可能时反压的根源，一条输入多条输出的场景 |
+| inPoolUsage 高 |  如果时上游所有outPoolUsage 都是低，<br>有可能最终可能导致反压(还没传递到上游;<br>如果时上游所有的outPoolUsage 都是高，则为反压根源) | 被下游反压。 |
+
+inPoolUsage和outPoolUsage反压分析表
+
+- outPoolUsage 和 inPoolUsage 同为低表明当前 Subtask 是正常的，同为高分别表明当前 Subtask 被下游反压。
+- 如果一个 Subtask 的 outPoolUsage 是高，通常是被下游 Task 所影响，所以可以排查它本身是反压根源的可能性。
+- 如果一个 Subtask 的 outPoolUsage 是低，但其 inPoolUsage 是高，则表明它有可能是反压的根源。因为通常反压会传
+导至其上游，导致上游某些 Subtask 的 outPoolUsage 为高。
+
+
+反压有时是短暂的且影响不大，比如来自某个 channel 的短暂网络延迟或者 TaskManager 的正常 GC，这种情况下可以不用处理。
+
+outPoolUsage 与 floatingBuffersUsage 、 exclusiveBuffersUsage 的关系:
+
+- floatingBuffersUsage 为高则表明反压正在传导至上游。
+- exclusiveBuffersUsage 则表明了反压可能存在倾斜。如果floatingBuffersUsage 高、exclusiveBuffersUsage 低，则存
+在倾斜。因为少数 channel 占用了大部分的 floating Buffer（channel 有自己的 exclusive buffer，当 exclusive 
+buffer 消耗完，就会使用floating Buffer）
+
+
+# 反压的原因及处理
+
+注意：反压可能时暂时的，可能由于负载高峰，CheckPoint或者作业重启引起的数据积压而导致的反压。如果反压是暂时的，
+应该忽略它。另外，请记住，断断续续的反压会影响我们的分析和解决问题。
+
+定位到反压节点后，分析造成反压的原因的办法主要是观察Task Thread。按照下面顺序一步步排查。
+
+## 使用火焰图分析
+
+火焰图是跟踪堆栈线程然后重复多次采样而生成的。每个方法的调用都会有一个长方型表示，长方型的长度和它在采样中出
+现的次数成正比。是Flink 1.13 新特性。
+
+开启方法：
+```bash 
+rest.flamegraph.enabled : true
+```
+
+横向就是耗时时长，横向越长表示耗时越长。纵向表示调用栈。一般只需要看最上面函数。
+
+
+## 分析GC情况
+
+TaskManager的内存以及GC问题也会导致反压，包括TaskManager JVM 各区内存不合理导致频繁Full GC甚至失联。通常建议
+使用默认的G1垃圾回收器。
+
+打印 GC 日志的第一步，就是开启 GC 打印的参数了，也是最基本的参数。
+
+```bash 
+-XX:+PrintGCDetails -XX:+PrintGCDateStamps 
+```
+-D参数配置方式：
+
+```bash 
+-Denv.java.opt="-XX:+PrintGCDetails -XX:+PrintGCDateStamps"
+```
+
+## 外部交互组件
+
+如果我们发现我们的source端数据读取性能比较低或者Sink端写入性能较差，需要检查第三方组件是否遇到瓶颈，以及做维表
+join时的性能问题，也许要和外部组件交互。
+
+关于第三方的性能问题，需要结合具体的组件来分析，最常用的思路：
+
+1、异步IO + 热缓存来优化读写性能，减少对外部组件的访问。
+
+2、先攒批在进行读写操作。
+
+
