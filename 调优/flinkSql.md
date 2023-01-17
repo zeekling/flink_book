@@ -47,10 +47,42 @@ configuration.setString(" table.exec.mini batch.size ", 20000);
 - table.exec.mini batch.size： 防止 OOM 设置每个批次最多缓存数据的条数 ，可以设为2 万条。
 
 
+注意：
+
+- 目前上述样例中的key value 配置项仅被 Blink planner支持。
+- 1.12 之前的版本有 bug ，开启 miniBatch ，不会清理过期状态，也就是说如果设置状态的 TTL ，无法清理过期状态。
+1.12 版本才修复这个问题 。
+
+参考ISSUE：https://issues.apache.org/jira/browse/FLINK_17096
+
+
 ## 适用场景
 
 微批处理通过增加延迟换取高吞吐，如果有超低延迟的要求，不建议开启微批处理。通常对于聚合的场景，微批处理可以显
 著的提升系统性能，建议开启。
 
+
+# 开启 LocalGlobal
+
+## 原理介绍
+
+LocalGlobal优化将原先的 Aggregate 分成 Local+Global 两阶段聚合，即MapReduce 模型中的 Combine+Reduce 
+处理模式。第一阶段在上游节点本地攒一批数据进行聚合（ localAgg ），并输出这次微批的增量值 A ccumulator ）。第
+二阶段再将收到的 Accumulator 合并（ Merge ），得到最终的结果 GlobalAgg ）。
+
+
+LocalGlobal本质上能够靠 LocalAgg 的聚合筛除部分倾斜数据，从而降低 GlobalAgg的热点，提升性能。结合下图理解 
+LocalGlobal 如何解决数据倾斜的问题。
+
+![pic](./flinksql0001.png)
+
+- 未开启 LocalGlobal 优化，由于流中的数据倾斜， Key 为红色的聚合算子实例需要处理更多的记录，这就导致了热点问题。
+- 开启 LocalGlobal 优化后，先进行本地聚合，再进行全局聚合。可大大减少 GlobalAgg的热点，提高性能。
+
+## 开启方式
+
+- LocalGlobal 优化需要先开启 MiniBatch ，依赖于 MiniBatch 的参数。
+- table.optimizer.agg phase strategy : 聚合策略。默认 AUTO ，支持参数 AUTO 、TWO_PHASE( 使用 LocalGlobal 两阶
+段聚合 、 ONE_PHASE( 仅使用 Global 一阶段聚合）。
 
 
