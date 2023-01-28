@@ -86,3 +86,25 @@ LocalGlobal 如何解决数据倾斜的问题。
 段聚合 、 ONE_PHASE( 仅使用 Global 一阶段聚合）。
 
 
+```java 
+// 初始化运行环境
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+TableEnvironment tEnv = StreamTableEnvironment.create(env);
+Configuration configuration = tEnv.getConfig().getConfiguration();
+// 开启 miniBatch
+configuration.setString("table.exec.mini-batch.enabled ", true);
+// 批量输出的间隔时间
+configuration.setString("table.exec.mini-batch.allow latency ", "5s");
+// 防止 OOM 设置每个批次最多缓存数据的条数 ，可以设为 2 万条
+configuration.setString("table.exec.mini-batch.size ", "20000");
+// 开启 LocalGlobal
+config uration.setString("table.optimizer.agg-phase-strategy", "TWO_PHASE");
+```
+
+- 1) 需要先开启 MiniBatch。
+- 2) 开启 LocalGlobal 需要 UDAF 实现 Merge 方法 。
+
+# 开启Split Distinct
+
+
+
