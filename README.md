@@ -12,6 +12,9 @@
 - [内存等资源调优](./调优/Resource.md)
 - [状态和CheckPoint 调优](./调优/CheckPoint.md)
 - [如何分析及处理 Flink 反压](./调优/backpress.md)
-- [Flink SQL 调优]()
+- [Flink SQL 调优](./调优/flinkSql.md)
+
+# 常见故障排除
+
 
 
