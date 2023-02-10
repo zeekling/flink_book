@@ -9,6 +9,8 @@
 
 # 内存调优
 
+## 目录
+
 - [内存等资源调优](./调优/Resource.md)
 - [状态和CheckPoint 调优](./调优/CheckPoint.md)
 - [如何分析及处理 Flink 反压](./调优/backpress.md)
@@ -16,5 +18,24 @@
 
 # 常见故障排除
 
+## 目录
+
+- [常见问题总结](./常见问题)
+
+
+# Flink SQL 
+
+Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL 双流Join。
+
+| 对比维度 | Hive SQL离线Join | Flink SQL双流Join |
+| ---| ----|----|
+| 数据源 | 有界(离线数据)| 无界(实时数据)  |
+| 计算次数 | 一次 | 持续计算 |
+| 计算结果 | 有界(离线数据)  | 无界(实时数据) |
+| 计算驱动 | 单边驱动  | 双边驱动  |
+
+## 目录
+
+- [Flink SQL双流Join底层原理](./Flink_SQL/双流Join底层原理.md)
 
 
