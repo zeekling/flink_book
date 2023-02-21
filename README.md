@@ -38,4 +38,20 @@ Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL �
 
 - [Flink SQL双流Join底层原理](./Flink_SQL/双流Join底层原理.md)
 
+# Flink 源码
+
+源码编译可以使用下面命令
+
+```sh
+mvn install -DskipTests -Dfast -Dpmd.skip=true -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -Dmaven.compile.fork=true -Pskip-webui-build
+
+```
+
+缺的包可以在 https://conjars.org/repo/org/pentaho/pentaho-aggdesigner-core/5.1.5-jhyde/
+
+https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client/7.2.2/ 下面找到。
+
+## 目录
+
+- [作业提交流程](./source_code/作业提交.md)
 
