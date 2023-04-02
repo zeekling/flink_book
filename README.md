@@ -37,13 +37,14 @@ Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL �
 ## 目录
 
 - [Flink SQL双流Join底层原理](./Flink_SQL/双流Join底层原理.md)
+- [时间区间Join](./Flink_SQL/时间区间Join.md)
 
 # Flink 源码
 
 源码编译可以使用下面命令
 
 ```sh
-mvn install -DskipTests -Dfast -Dpmd.skip=true -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -Dmaven.compile.fork=true -Pskip-webui-build
+mvn install -DskipTests -Dfast -Dpmd.skip=true -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -Dmaven.compile.fork=true
 
 ```
 
