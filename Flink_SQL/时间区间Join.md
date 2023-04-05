@@ -35,3 +35,12 @@ Join示例
 函数processElement2 右流处理。
 
 
+# 相关参数
+
+`table.exec.source.idle-timeout`:
+
+当一个source在超时时间内没有接收到任何元素时，它将被标记为临时空闲。这允许下游任务在空闲时提前其watermarks，而
+无需等待来自该source的watermarks。
+
+
+
