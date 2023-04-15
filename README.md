@@ -39,6 +39,14 @@ Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL �
 - [Flink SQL双流Join底层原理](./Flink_SQL/双流Join底层原理.md)
 - [时间区间Join](./Flink_SQL/时间区间Join.md)
 
+# 基础知识
+
+## 目录
+
+- [Flink CEP](./basic/CEP.md)
+- [旁路输出](./basic/旁路输出.md)
+
+
 # Flink 源码
 
 源码编译可以使用下面命令
@@ -55,4 +63,5 @@ https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client/7.
 ## 目录
 
 - [作业提交流程](./source_code/作业提交.md)
+
 
