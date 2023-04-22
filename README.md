@@ -52,7 +52,8 @@ Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL �
 源码编译可以使用下面命令
 
 ```sh
-mvn install -DskipTests -Dfast -Dpmd.skip=true -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -Dmaven.compile.fork=true
+mvn install -DskipTests -Dfast -Dpmd.skip=true -Dcheckstyle.skip=true \
+-Dmaven.javadoc.skip=true -Dmaven.compile.fork=true
 
 ```
 
@@ -63,5 +64,8 @@ https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client/7.
 ## 目录
 
 - [作业提交流程](./source_code/作业提交.md)
-
+- [Flink组件间通信](./source_code/Flink组件通信.md)
+- [per-job模式启动流程](./source_code/per-job启动.md)
+- [yarn-application模式启动](./source_code/application启动.md)
+- [yarn-session启动](./source_code/yarn-session启动.md)
 
