@@ -45,7 +45,7 @@ Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL �
 
 - [Flink CEP](./basic/CEP.md)
 - [旁路输出](./basic/旁路输出.md)
-
+- [Flink Operator Chain](./basic/Flink_Operator_chain.md)
 
 # Flink 源码
 
