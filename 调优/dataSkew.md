@@ -6,7 +6,7 @@
 
 数据倾斜就是数据的分布严重不均，流入部分算子的数据明显多余其他算子，造成这部分算子压力过大。
 
-![pic](./dataSkew0001.png)
+![pic](https://pan.zeekling.cn/flink/basic/dataSkew0001.png)
 
 
 # 影响
@@ -54,7 +54,7 @@ Flink Web UI 自带Subtask 接收和发送的数据量。当 Subtasks 之间处�
 
 解决思路： 通过添加随机前缀，打散 key 的分布，使得数据不会集中在几个 Subtask。
 
-![pic](./dataSkew0002.png)
+![pic](https://pan.zeekling.cn/flink/basic/dataSkew0002.png)
 
 
 具体措施：
@@ -65,7 +65,7 @@ Flink Web UI 自带Subtask 接收和发送的数据量。当 Subtasks 之间处�
 
 解决思路：聚合统计前，先进行预聚合，例如两阶段聚合（加盐局部聚合+去盐全局聚合）。
 
-![pic](./dataSkew0003.png)
+![pic](https://pan.zeekling.cn/flink/basic/dataSkew0003.png)
 
 两阶段聚合的具体措施：
 ① 预聚合：加盐局部聚合，在原来的 key 上加随机的前缀或者后缀。
@@ -115,5 +115,4 @@ pv值，然后最外层，将各个打散的pv求和。
 
 注意：最内层的sql，给分组的key添加的随机数，范围不能太大，也不能太小，太大的话，分的组太多，增加checkpoint的
 压力，太小的话，起不到打散的作用。
-
 

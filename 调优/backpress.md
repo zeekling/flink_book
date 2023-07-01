@@ -14,7 +14,7 @@ consumer）的摄入速率。
 
 # TCP-based 反压的弊端
 
-![pic](./backpress002.png)
+![pic](https://pan.zeekling.cn/flink/basic/backpress002.png)
 
 - 单个Task导致的反压，会阻断整个TM-TM之间的socket，连checkpoint barries也无法发出。
 - 反压传播路径长，导致生效时延较大。
@@ -28,7 +28,7 @@ backlog size 告诉下游准备发送多少消息，下游就会去计算有多�
 就会返还给上游一个 Credit 告知他可以发送消息（图上两个 ResultSubPartition 和 InputChannel 之间是虚线是因为最
 终还是要通过 Netty 和 Socket 去通信），下面我们看一个具体示例。
 
-![pic](./backpress001.png)
+![pic](https://pan.zeekling.cn/flink/basic/backpress001.png)
 
 假设我们上下游的速度不匹配，上游发送速率为 2，下游接收速率为 1，可以看到图上在 ResultSubPartition 中累积了两
 条消息，10 和 11， backlog 就为 2，这时就会将发送的数据 <8,9> 和 backlog = 2 一同发送给下游。下游收到了之后
@@ -76,7 +76,7 @@ Flink Web UI 的反压监控提供了 Subtask 级别的反压监控。监控的�
 TaskManager 上正在运行的所有线程，收集在缓冲区请求中阻塞的线程数（意味着下游阻塞），并计算缓冲区阻塞线程数与
 总线程数的比值 rate。其中，rate < 0.1 为 OK，0.1 <= rate <= 0.5 为 LOW，rate > 0.5 为 HIGH。
 
-![pic](./backpress003.png)
+![pic](https://pan.zeekling.cn/flink/basic/backpress003.png)
 
 
 以下两种场景可能导致反压：
@@ -178,5 +178,4 @@ join时的性能问题，也许要和外部组件交互。
 1、异步IO + 热缓存来优化读写性能，减少对外部组件的访问。
 
 2、先攒批在进行读写操作。
-
 

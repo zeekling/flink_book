@@ -3,7 +3,7 @@
 
 # 底层原理简介
 
-![pic](./flinksql_0001.png)
+![pic](https://pan.zeekling.cn/flink/sql/flinksql_0001.png)
 
 - LState:存储左边数据流中的数据。
 - RState：存储右边数据流中的数据。

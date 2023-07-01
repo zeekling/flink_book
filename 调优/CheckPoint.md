@@ -10,7 +10,7 @@ flush 线程从内存 flush 到磁盘上；读取过程中，会先尝试从 Wri
 查询 Block Cache，如果内存中都没有的话，则会按层级查找底层的 SST 文件，并将返回的结果所在的 Data Block 加载到 Block 
 Cache，返回给上层应用。
 
-![pic](./RocksDB001.png)
+![pic](https://pan.zeekling.cn/flink/basic/RocksDB001.png)
 
 
 # RocksDBKeyedStateBackend增量快照介绍
@@ -19,7 +19,7 @@ Cache，返回给上层应用。
 用这一特性将两次 checkpoint 之间 SST 文件列表的差异作为状态增量上传到分布式文件系统上，并通过 JobMaster 中的 
 SharedStateRegistry 进行状态的注册和过期。
 
-![pic](./RocksDB002.png)
+![pic](https://pan.zeekling.cn/flink/basic/RocksDB002.png)
 
 如上图所示，Task 进行了 3 次快照（假设作业设置保留最近 2 次 Checkpoint）：
 - CP-1：RocksDB 产生 sst-1 和 sst-2 两个文件，Task 将文件上传至 DFS，JM 记录 sst 文件对应的引用计数
@@ -49,7 +49,7 @@ StateBackend 要更为复杂，在 100+GB 甚至 TB 级别状态下，作业比�
 flink1.13中引入了State访问的性能监控，即latency tracking state、此功能不局限于State Backend的类型，自定义实现的State 
 Backend也可以复用此功能。
 
-![pic](./RocksDB003.png)
+![pic](https://pan.zeekling.cn/flink/basic/RocksDB003.png)
 
 state访问的性能监控会产生一定的性能影响，所以默认每100次做一次抽样sample，对不同的state Backend性能损失影响不同。
 
@@ -67,11 +67,11 @@ state访问的性能监控会产生一定的性能影响，所以默认每100次
 
 `state.backend.latency-track.state-name-as-variable:true`：将状态名作为变量
 
-![pic](./RocksDB004.png)
+![pic](https://pan.zeekling.cn/flink/basic/RocksDB004.png)
 
 0代表是任务编号，filter.visit-state是定义的状态的变量名。
 
-![pic](./RocksDB005.png)
+![pic](https://pan.zeekling.cn/flink/basic/RocksDB005.png)
 
 有很多这种统计值可以查看，中位值，75分位值等。
 

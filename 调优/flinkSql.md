@@ -74,7 +74,7 @@ LocalGlobal优化将原先的 Aggregate 分成 Local+Global 两阶段聚合，�
 LocalGlobal本质上能够靠 LocalAgg 的聚合筛除部分倾斜数据，从而降低 GlobalAgg的热点，提升性能。结合下图理解 
 LocalGlobal 如何解决数据倾斜的问题。
 
-![pic](./flinksql0001.png)
+![pic](https://pan.zeekling.cn/flink/basic/flinksql0001.png)
 
 - 未开启 LocalGlobal 优化，由于流中的数据倾斜， Key 为红色的聚合算子实例需要处理更多的记录，这就导致了热点问题。
 - 开启 LocalGlobal 优化后，先进行本地聚合，再进行全局聚合。可大大减少 GlobalAgg的热点，提高性能。
@@ -117,7 +117,7 @@ Global 节点仍然存在热点。
 从 Flink1.9.0 版本开始，提供了 COUNT DISTINCT 自动打散功能， 通过HASH_CODE(distinct_key) % BUCKET_NUM 打散，
 不需要手动重写。Split Distinct 和LocalGlobal 的原理对比参见下图。
 
-![pic](./flinksql0002.png)
+![pic](https://pan.zeekling.cn/flink/basic/flinksql0002.png)
 
 Distinct举例 
 
