@@ -41,13 +41,17 @@ Flink SQL学习笔记提纲。持续更新。Hive SQL 离线Join VS Flink SQL �
 
 # 基础知识
 
-## 目录
+## FLink基础知识
 
 - [Flink CEP](./basic/CEP.md)
 - [旁路输出](./basic/旁路输出.md)
 - [Flink Operator Chain](./basic/Flink_Operator_chain.md)
 - [slot相关](./basic/slot相关.md)
 
+
+## Flink On Hudi
+
+- [Flink On Hudi 简介](./hudi/README.md)
 
 
 # Flink 源码
