@@ -7,6 +7,7 @@
 - [slot相关](./slot相关.md)
 - [Flink基本架构](./Flink基本架构.md)
 - [旁路输出](./旁路输出.md)
-
-
+- [BlobServer](./blobServer.md)
+- [广播](./broadcast.md)
+- [Checkpoint](./checkpoint.md)
 
