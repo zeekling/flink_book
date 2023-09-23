@@ -70,33 +70,30 @@ LSM树压缩策略需要围绕三个问题进行考量：
 
 ### size-tiered 策略
 
-Size-tiered策略是一种常用的Compaction策略。
+Size-tiered策略是一种常用的Compaction策略。它可以有效地减少SSTable的数量和大小，降低查询时的磁盘读取次数和延迟，提高LSM树的查询性能和空间利用率。
+
+- 统计每个层级中的SSTable数量和总大小。当某个层级中的SSTable数量达到预设的阈值N后，就会触发Compaction操作。
+- 将该层级中的所有SSTable按照大小分成若干组。每组的大小大致相等。
+- 对于每组SSTable，选择一个合适的合并策略。常用的合并策略包括两两合并（Two-Level Merge）、级联合并（Cascade Merge）和追加合并（Append Merge）等。
+- 执行合并操作，将同一组中的SSTable合并为一个更大的SSTable，并将合并后的结果写入到下一层级的队尾。这样可以保持每个层级中的SSTable大小相近，从而减少后续Compaction操作的成本。
+- 更新索引和元数据信息，记录新生成的SSTable的位置、大小和版本号等信息，以便后续的查询和Compaction操作。
+- 删除原有的SSTable文件，释放磁盘空间。如果需要保留一定数量的历史版本，则可以将旧的SSTable文件移动到历史版本目录中，以便后续的查询和回滚操作。
+
+![pic](https://pan.zeekling.cn//flink/basic/state/rocksdb_0003.png)
 
 
 
 ### leveled 策略
 
-Leveled策略是LSM树中的另一种Compaction策略。
+Leveled策略是一种基于有序SSTable的高效Compaction策略。它可以有效地减小空间放大和读放大问题，提高LSM树的查询性能和空间利用率。
+
+当一个 SSTable 中的数据量达到一定大小时，它就会被合并到上一层，这个过程被称为 L0 合并（Level 0 Merge）。在 L0 合并时，相邻的 SSTable 会被合并成一个更大的 SSTable，这样可以减少 SSTable 的数量，降低查询时需要扫描的 SSTable 的数量，从而提高查询效率。
+
+在 L0 合并完成之后，新生成的 SSTable 会被插入到第 1 层，如果第 1 层的 SSTable 数量超过了限制，那么就会进行 L1 合并，将相邻的 SSTable 合并成一个更大的 SSTable，同样的过程会在第 2 层、第 3 层等等一直进行下去，直到最高层。
+
+当进行查询时，LSM 树会从最底层开始查找，如果在当前层的 SSTable 中找不到需要的数据，就会往上一层查找，直到找到需要的数据或者到达最高层。由于每一层的 SSTable 都是有序的，因此可以使用二分查找等算法来加速查询。
+
+![pic](https://pan.zeekling.cn//flink/basic/state/rocksdb_0004.png)
 
 
-
-
-
-## 并发控制
-
-
-
-## 内存管理
-
-
-
-
-
-## 日志系统
-
-
-
-
-
-## 文件格式
 
