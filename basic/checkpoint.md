@@ -256,8 +256,8 @@ restoreWithoutRescaling(theFirstStateHandle);
 
 - 选择最优的KeyedStateHandle。
 - 初始化RocksDB实例。
-  - 根据已经选择的Handle从Base RocksDB实例中恢复数据。
-  - 裁剪Base RocksDB实例。
+- 根据已经选择的Handle从Base RocksDB实例中恢复数据。
+- 裁剪Base RocksDB实例。
 - 将key-groups从临时RocksDB转换到Base RocksDB数据库。
 
 
@@ -266,17 +266,67 @@ restoreWithoutRescaling(theFirstStateHandle);
 - IncrementalRemoteKeyedStateHandle:
 - IncrementalLocalKeyedStateHandle:
 
-
 ### RocksDBFullRestoreOperation
+
+从完整的快照中恢复RocksDB实例的过程。
+- 打开RocksDB数据库实例。
+- 读取数据。
+
+
+#### FullSnapshotRestoreOperation
+
+下面是RocksDB后端采用的存储格式，主要是下面格式： 
+
+```
+                  +-------------------------------------------------------------+
+                  |                Keyed Backend Meta Information               |
+Meta Information  +--------------------+-----+----------------------------------+
+                  |    State Meta 0    | ... |           State Meta M           |
+                  +-------------------------------------------------------------+
+                  |                       State ID (short)                      |
+State 0           +--------------------+-----+----------------------------------+
+                  | State (K,V) pair 0 | ... | State (K,V) pair X (flipped MSB) |
+                  +--------------------+-----+----------------------------------+
+                  |                       State ID (short)                      |
+State 1           +--------------------+-----+----------------------------------+
+                  | State (K,V) pair 0 | ... | State (K,V) pair X (flipped MSB) |
+                  +--------------------+-----+----------------------------------+
+                  |                       State ID (short)                      |
+                  +--------------------+-----+----------------------------------+
+State M           | State (K,V) pair 0 | ... | State (K,V) pair X (flipped MSB) |
+                  +--------------------+-----+----------------------------------+
+                  |                END_OF_KEY_GROUP_MARK (0xFFFF)               |
+                  +-------------------------------------------------------------+
+```
+
+对于(K, V)格式与其他格式不同,格式如下：
+
+```
++------------------+-------------------------------------+
+|    ValueState    |    [CompositeKey(KG, K, NS), SV]    |
+|------------------+-------------------------------------+
+|    ListState     |    [CompositeKey(KG, K, NS), SV]    |
++------------------+-------------------------------------+
+|     MapState     | [CompositeKey(KG, K, NS) :: UK, UV] |
++------------------+-------------------------------------+
+| AggregatingState |    [CompositeKey(KG, K, NS), SV]    |
++------------------+-------------------------------------+
+|   ReducingState  |    [CompositeKey(KG, K, NS), SV]    |
+|                  +-------------------------------------+
+|                  |    [CompositeKey(KG, K, NS), SV]    |
++------------------+-------------------------------------+
+|      Timers      |    [KG :: TS :: K :: NS, (empty)]   |
++------------------+-------------------------------------+
+```
 
 
 ### RocksDBHeapTimersFullRestoreOperation
 
+从完整的快照中恢复RocksDB实例的过程。
+
 
 
 ### RocksDBNoneRestoreOperation
-
-
 
 
 
